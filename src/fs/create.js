@@ -1,13 +1,18 @@
-import fs from "fs";
+import { promises as fsPromises, constants as fsConstants } from "fs";
 
 const create = async () => {
-  fs.readFile("./files/fresh.txt", "utf8", (error, data) => {
-    if (data) {
-      throw new Error("FS operation failed");
+  const filePath = "./files/fresh.txt";
+
+  try {
+    await fsPromises.access(filePath, fsConstants.F_OK);
+    throw new Error("FS operation failed");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      await fsPromises.writeFile(filePath, "I am fresh and young");
     } else {
-      fs.writeFile("./files/fresh.txt", "I am fresh and young", "utf-8");
+      throw error;
     }
-  });
+  }
 };
 
 await create();
